@@ -1,5 +1,5 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const formidable = require("formidable");
 const fs = require("fs");
 const { validationResult } = require("express-validator");
