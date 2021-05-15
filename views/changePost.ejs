@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Edit Post</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css    "
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+      p.item {
+        padding: 16px;
+        text-align: center;
+        border-radius: 8px;
+        color: white;
+        background-color: green;
+      }
+    </style>
+  </head>
+
+  <body class="bg-secondary">
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">TDTU</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">
+                Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/trangcanhan/<%= user._id %>"
+                >Trang cá nhân</a
+              >
+            </li>
+            <% if(user.role[0] === 'admin') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/register"
+                >Tạo tài khoản Phòng/Khoa</a
+              >
+            </li>
+            <% } else if (user.role[0] === 'student') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/changeinfo"
+                >Thay đổi thông tin cá nhân</a
+              >
+            </li>
+            <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/changepass">Đổi mật khẩu</a>
+            </li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <h3 class="text-center my-5 text-light">Chỉnh sửa bài viết</h3>
+
+    <!-- buộc toàn bộ dòng và cột phải bỏ trong class container -->
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-5">
+          <div class="border p-3 rounded bg-light">
+            <form method="POST" action="/post/changePost/<%= post._id %>">
+              <input type="hidden" name="_method" value="PUT" />
+
+              <div class="form-group">
+                <label for="title">Tiêu đề</label>
+                <div class="input-group mb-3">
+                  <input
+                    value="<%= post.title %>"
+                    id="title"
+                    name="title"
+                    type="text"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="content">Nội dung</label>
+                <div class="input-group mb-3">
+                  <textarea
+                    id="content"
+                    name="content"
+                    class="form-control"
+                    rows="3"
+                  >
+<%= post.content %></textarea
+                  >
+                </div>
+              </div>
+
+              <% if (post.image){%>
+              <div class="form-group">
+                <div>Ảnh</div>
+
+                <img
+                  style="width: 300px; height: 300px"
+                  src="<%= post.image %>"
+                  alt=""
+                />
+              </div>
+              <%} %>
+              <!-- Button trigger modal -->
+              <button
+                type="button"
+                class="btn btn-success btn-sm"
+                data-toggle="modal"
+                data-target="#exampleModal"
+              >
+                Update image
+              </button>
+              <% if (post.video){%>
+              <div class="form-group">
+                <div>Video</div>
+
+                <iframe
+                  style="width: 300px; height: 300px"
+                  src="<%= post.video %>"
+                >
+                </iframe>
+              </div>
+              <%} %>
+
+              <div class="form-group">
+                <input
+                  name="video"
+                  id="video"
+                  type="text"
+                  class="form-control"
+                  placeholder="Link youtube để update video (nếu có)"
+                />
+              </div>
+
+              <input
+                type="hidden"
+                name="image"
+                id="image"
+                value="<%= post.image %>"
+              />
+
+              <div class="form-group">
+                <% if (error.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show">
+                  <button type="button" class="close" data-dismiss="alert">
+                    &times;
+                  </button>
+                  <%= error %>
+                </div>
+                <% } %>
+              </div>
+              <div class="form-group">
+                <button class="btn btn-primary px-5" type="submit">
+                  Submit
+                </button>
+              </div>
+              <a href="/"><h5 class="text-warning">Trang chủ</h5></a>
+            </form>
+            <!-- Modal -->
+            <div
+              class="modal fade"
+              id="exampleModal"
+              tabindex="-1"
+              role="dialog"
+              aria-labelledby="exampleModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Chọn ảnh</h5>
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <form
+                      method="POST"
+                      enctype="multipart/form"
+                      id="form-upload"
+                    >
+                      <input
+                        type="hidden"
+                        name="image"
+                        value="<%= post.image %>"
+                      />
+                      <div class="form-group">
+                        <input type="file" name="file" class="form-control" />
+                      </div>
+                      <input
+                        type="submit"
+                        class="btn btn-success"
+                        value="Upload"
+                      />
+                    </form>
+                    <script>
+                      $("#form-upload").on("submit", function (e) {
+                        e.preventDefault();
+                        $.ajax({
+                          url: "/post/doupdateimage",
+                          method: "POST",
+                          data: new FormData(this),
+                          contentType: false,
+                          cache: false,
+                          processData: false,
+                          success: function (response) {
+                            image = response;
+                            $("#image").val(image);
+                            $("#exampleModal").modal("hide");
+                          },
+                        });
+                      });
+                    </script>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

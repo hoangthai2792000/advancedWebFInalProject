@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Post</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </head>
+
+  <body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">TDTU</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">
+                Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/trangcanhan/<%= user._id %>"
+                >Trang cá nhân</a
+              >
+            </li>
+            <% if(user.role[0] === 'admin') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/register"
+                >Tạo tài khoản Phòng/Khoa</a
+              >
+            </li>
+            <% } else if (user.role[0] === 'student') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/changeinfo"
+                >Thay đổi thông tin cá nhân</a
+              >
+            </li>
+            <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/changepass">Đổi mật khẩu</a>
+            </li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- Page content-->
+    <div class="container">
+      <div class="row">
+        <!-- Post content-->
+        <div class="col-lg-8">
+          <!-- Title-->
+          <h1 class="mt-4"><%= post.title %></h1>
+          <!-- Author-->
+          <% if(post.userid.role[0] === 'admin'){ %>
+          <p class="lead">
+            by
+            <a href="/trangcanhan/<%= post.userid._id %>"
+              ><%= post.userid.role[0] %></a
+            >
+          </p>
+          <% }else if(post.userid.role[0] === 'student'){ %>
+          <p class="lead">
+            by
+            <a href="/trangcanhan/<%= post.userid._id %>"
+              ><%= post.userid.username %></a
+            >
+          </p>
+          <% }else{ %>
+          <p class="lead">
+            by
+            <a href="/trangcanhan/<%= post.userid._id %>"><%= post.pk %></a>
+          </p>
+          <% } %>
+
+          <hr />
+          <!-- Date and time-->
+          <p>Posted on <%= post.createdAt %></p>
+          <hr />
+
+          <% if(user._id == post.userid._id){ %>
+          <span
+            ><a class="btn btn-success" href="/post/changePost/<%= post._id%>"
+              >Edit</a
+            ></span
+          >
+
+          <form method="POST" action="/post/<%= post._id%>">
+            <input type="hidden" name="_method" value="DELETE" />
+            <input type="hidden" name="image" value="<%= post.image%>" />
+            <button class="btn btn-danger" type="submit">Delete</button>
+          </form>
+
+          <%} %>
+          <!-- Preview image-->
+          <% if(post.image){ %>
+          <img class="img-fluid rounded mt-3" src="<%= post.image %>" alt="" />
+          <% } %> <% if(post.video) {%>
+          <iframe width="730" height="500" src="<%= post.video %>"> </iframe>
+          <%}%>
+
+          <hr />
+          <!-- Post content-->
+          <p><%= post.content %></p>
+          <hr />
+          <!-- Comments form-->
+          <div class="card my-4">
+            <h5 class="card-header">Để lại bình luận</h5>
+            <div class="card-body">
+              <form onsubmit="return doComment(this)">
+                <input type="hidden" name="postid" value="<%= post._id %>" />
+                <div class="form-group">
+                  <textarea
+                    id="content"
+                    name="content"
+                    class="form-control"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <button class="btn btn-primary" type="submit">Bình Luận</button>
+              </form>
+              <script>
+                function doComment(form) {
+                  $.ajax({
+                    url: "/post/doComment",
+                    method: "POST",
+                    timeout: 5000,
+                    data: {
+                      content: form.content.value,
+                      postid: form.postid.value,
+                    },
+                    success: function (response) {
+                      alert(response);
+                    },
+                  });
+                  resetData();
+                  $.ajax({
+                    method: "GET",
+                  });
+                }
+                function resetData() {
+                  $("#title").val("");
+                  $("#content").val("");
+                }
+              </script>
+            </div>
+          </div>
+          <!-- Comment list-->
+          <div class="comment-list">
+            <% comments.forEach((comment) =>{ %>
+            <div class="media mb-4">
+              <% if(comment.userid.image){ %>
+              <img
+                class="d-flex mr-3 rounded-circle"
+                style="width: 50px; height: 50px"
+                src="<%= comment.userid.image %>"
+                alt="..."
+              />
+              <% }else{ %>
+              <img
+                class="d-flex mr-3 rounded-circle"
+                src="https://via.placeholder.com/50x50"
+                alt="..."
+              />
+              <% } %>
+
+              <div class="media-body">
+                <h5 class="mt-0">
+                  <% if(comment.userid.role[0] === 'admin'){ %> <%=
+                  comment.userid.role[0] %> <% } else { %> <%=
+                  comment.userid.username %> <% } %>
+                </h5>
+                <%= comment.content %>
+                <div>
+                  <% if(user._id == comment.userid._id){ %>
+
+                  <form onsubmit="return dodeleteComment(this)">
+                    <input type="hidden" name="_method" value="DELETE" />
+                    <input
+                      type="hidden"
+                      name="cmtid"
+                      value="<%= comment._id %>"
+                    />
+                    <button class="btn btn-danger btn-sm" type="submit">
+                      Delete
+                    </button>
+                  </form>
+                  <script>
+                    function dodeleteComment(form) {
+                      $.ajax({
+                        url: "/post/comment/" + form.cmtid.value,
+                        method: "POST",
+                        timeout: 5000,
+                        data: {
+                          _method: form._method.value,
+                        },
+                        success: function (response) {
+                          alert(response);
+                        },
+                      });
+                      resetData();
+                      $.ajax({
+                        method: "GET",
+                      });
+                    }
+                    function resetData() {
+                      $("#title").val("");
+                      $("#content").val("");
+                    }
+                  </script>
+                  <%} %>
+                </div>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

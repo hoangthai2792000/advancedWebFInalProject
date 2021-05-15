@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Home</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+      integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+      crossorigin="anonymous"
+    ></script>
+  </head>
+
+  <body>
+    <!-- Navigation-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">TDTU</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarResponsive"
+          aria-controls="navbarResponsive"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">
+                Home
+                <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/trangcanhan/<%= user._id %>"
+                >Trang cá nhân</a
+              >
+            </li>
+            <% if(user.role[0] === 'admin') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/register"
+                >Tạo tài khoản Phòng/Khoa</a
+              >
+            </li>
+            <% } else if (user.role[0] === 'student') { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/changeinfo"
+                >Thay đổi thông tin cá nhân</a
+              >
+            </li>
+            <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/changepass">Đổi mật khẩu</a>
+            </li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- Page content-->
+    <div class="container">
+      <div class="row">
+        <!-- Side widgets-->
+        <div class="col-md-4">
+          <!-- Xin chào user widget-->
+          <div class="card my-4">
+            <div class="card-body">
+              <ul class="list-unstyled mb-0">
+                <li><h3>Xin chào <%= user.username %></h3></li>
+                <li>
+                  <a href="/user/logout" class="btn btn-info btn-md">
+                    Đăng Xuất
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <!-- Thông báo của các phòng/khoa widget-->
+          <div class="card my-4">
+            <a class="card-header" href="/thongbao"><h4>Thông báo</h4></a>
+            <div class="card-body list-group-flush">
+              <% allposts.forEach((post) => { if(post.pk.length > 0) { %>
+              <div class="list-group-item">
+                <h5><%= post.pk %></h5>
+                <div><%= post.createdAt %></div>
+                <a href="/post/<%= post._id %>">
+                  <p class="text-truncate"><%= post.title %></p>
+                </a>
+              </div>
+              <% } }) %>
+            </div>
+          </div>
+        </div>
+        <!-- Blog entries-->
+        <div class="col-md-8">
+          <!-- Form post-->
+          <form
+            id="postForm"
+            class="mt-4 mb-5 border p-3"
+            onsubmit="return doPost(this)"
+          >
+            <% if(user.role[0] !== 'student' && user.role[0] !== 'admin') { %>
+            <div class="form-group"><h3>Đăng thông báo</h3></div>
+            <% } %>
+            <div class="form-group">
+              <input
+                name="title"
+                id="title"
+                type="text"
+                class="form-control"
+                placeholder="Tiêu đề"
+              />
+            </div>
+            <div class="form-group">
+              <input
+                name="content"
+                id="content"
+                type="text"
+                class="form-control pt-4 pb-5"
+                placeholder="Nội dung"
+              />
+            </div>
+            <div class="form-group">
+              <input
+                name="video"
+                id="video"
+                type="text"
+                class="form-control"
+                placeholder="Link youtube để đăng video (nếu có)"
+              />
+            </div>
+            <!-- Button trigger modal -->
+            <button
+              type="button"
+              class="btn btn-success"
+              data-toggle="modal"
+              data-target="#exampleModal"
+            >
+              Upload image
+            </button>
+            <% if(user.role[0] !== 'student' && user.role[0] !== 'admin') { %>
+            <div class="form-group">
+              <select
+                class="form-select mt-3"
+                aria-label="Default select example"
+                name="pk"
+                id="pk"
+              >
+                <option selected disabled>Chọn 1 Phòng/Khoa</option>
+                <% user.role.forEach((role) => {%>
+                <option value="<%= role%>"><%= role%></option>
+
+                <%})%>
+              </select>
+            </div>
+            <%} else { %>
+            <div class="form-group">
+              <select
+                class="form-select"
+                aria-label="Default select example"
+                name="pk"
+                id="pk"
+                style="display: none"
+              >
+                <option selected disabled></option>
+              </select>
+            </div>
+            <% } %>
+
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">Đăng</button>
+            </div>
+          </form>
+          <script>
+            function doPost(form) {
+              let options = {
+                method: "POST",
+                url: "/user/doPost",
+                timeout: 5000,
+                data: {
+                  title: form.title.value,
+                  content: form.content.value,
+                  pk: form.pk.value,
+                  image: imagePath,
+                  video: form.video.value,
+                },
+              };
+
+              $.ajax(options)
+                .done((response) => {
+                  alert(response);
+                  if (options.data.pk.length > 0) {
+                    let socket = io();
+                    socket.emit("thongbao", form.pk.value);
+                  }
+                })
+                .fail((Error) => {
+                  alert(Error);
+                });
+
+              resetData();
+
+              $.ajax({
+                method: "GET",
+              });
+            }
+            function resetData() {
+              $("#title").val("");
+              $("#content").val("");
+            }
+          </script>
+          <!-- Modal -->
+          <div
+            class="modal fade"
+            id="exampleModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="exampleModalLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">
+                    Chọn ảnh (nếu có)
+                  </h5>
+                  <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <form method="POST" enctype="multipart/form" id="form-upload">
+                    <div class="form-group">
+                      <input type="file" name="file" class="form-control" />
+                    </div>
+                    <input
+                      type="submit"
+                      class="btn btn-success"
+                      value="Upload"
+                    />
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          <script>
+            let imagePath = "";
+            $("#form-upload").on("submit", function (e) {
+              e.preventDefault();
+              $.ajax({
+                url: "/user/douploadimage",
+                method: "POST",
+                data: new FormData(this),
+                contentType: false,
+                cache: false,
+                processData: false,
+                success: function (response) {
+                  imagePath = response;
+                  $("#exampleModal").modal("hide");
+                },
+              });
+            });
+          </script>
+          <!-- Blog post-->
+          <div id="online-notification" class="alert alert-warning">
+            <strong>Khoa cntt</strong> vừa mới đăng một thông báo mới
+          </div>
+          <script>
+            window.onload = () => {
+              $("#online-notification").fadeTo(10, 0); // hide
+              let socket = io();
+              socket.on("thongbao", (pk) => {
+                $("#online-notification strong").html(pk);
+                $("#online-notification").fadeTo(3000, 2); // show
+                setTimeout(() => {
+                  $("#online-notification").fadeTo(2000, 0); // hide
+                }, 4000);
+              });
+            };
+          </script>
+          <% allposts.forEach((post) =>{ %>
+          <div class="card mb-4">
+            <% if(post.image) {%>
+            <img
+              class="card-img-top mb-2"
+              src="<%= post.image %>"
+              alt=""
+              width="fit-content"
+              height="500"
+            />
+            <%}%> <% if(post.video) {%>
+            <iframe width="fit-content" height="500" src="<%= post.video %>">
+            </iframe>
+            <%}%>
+
+            <div class="card-body">
+              <h2 class="card-title"><%= post.title %></h2>
+              <p class="card-text text-truncate"><%= post.content %></p>
+              <a class="btn btn-primary" href="/post/<%= post._id%>"
+                >Chi Tiết →</a
+              >
+            </div>
+            <div class="card-footer text-muted">
+              Posted on <%= post.createdAt %> by <% if(post.userid.role[0] ===
+              'student') { %>
+              <a href="/trangcanhan/<%= post.userid._id%>"
+                ><%= post.userid.username %></a
+              >
+              <% } else if(post.userid.role[0] === 'admin') { %>
+              <a href="/trangcanhan/<%= post.userid._id%>"
+                ><%= post.userid.role[0] %></a
+              >
+              <% }else{ %>
+              <a href="/trangcanhan/<%= post.userid._id%>"><%= post.pk %></a>
+              <% } %>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
